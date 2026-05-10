@@ -1,7 +1,7 @@
-from __future__ import annotations
 import numpy as np
-from Activation import ReLU, Softmax
 from enum import Enum
+
+from neural_network_from_scratch.activations import ReLU, Softmax
 
 class LayerType(Enum):
     INPUT = "Input"

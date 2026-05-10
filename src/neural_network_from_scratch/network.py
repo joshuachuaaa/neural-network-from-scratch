@@ -1,7 +1,8 @@
-from Layer import Layer, LayerType
-import Settings
 import numpy as np
 from typing import List
+
+from neural_network_from_scratch import settings
+from neural_network_from_scratch.layers import Layer, LayerType
 
 class NeuralNetwork:
     """
@@ -12,12 +13,12 @@ class NeuralNetwork:
     def __init__(self):
 
         # Declare number of neurons in the input & output layers
-        self.input_dims = Settings.IN_DIMS
-        self.output_dims = Settings.OUT_DIM
+        self.input_dims = settings.IN_DIMS
+        self.output_dims = settings.OUT_DIM
 
         # Declare number of hidden layers & neurons
-        self.hidden_layers = Settings.HIDDEN_LAYERS
-        self.hidden_layers_dim = Settings.HIDDEN_LAYER_DIM
+        self.hidden_layers = settings.HIDDEN_LAYERS
+        self.hidden_layers_dim = settings.HIDDEN_LAYER_DIM
 
         # To Store all the layers within a single array
         self.layer_array : List[Layer] = []
@@ -99,5 +100,4 @@ class NeuralNetwork:
         """Find Error term for layer"""
         print(layer.errorVector.shape)
         return ( np.transpose(nextLayer.weights) @ layer.errorVector)  * (layer.boolActiveNeurons)
-
 
