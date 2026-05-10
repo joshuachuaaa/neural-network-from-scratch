@@ -87,6 +87,20 @@ nnfs-train
 
 ## Terminal Visualization
 
+Launch the interactive terminal lab:
+
+```bash
+PYTHONPATH=src python -m neural_network_from_scratch.cli
+```
+
+After editable install:
+
+```bash
+nnfs
+```
+
+The main menu lets you add/remove hidden layers, change neuron counts, build or reset the model, train with a live dashboard, evaluate, and run inference on MNIST samples. Editing the architecture resets the current model so training and inference always match the architecture shown on the main screen.
+
 Run a Rich-powered terminal dashboard that shows:
 
 - the configured network layers

@@ -10,15 +10,20 @@ class NeuralNetwork:
     Create input layer -> hidden layers -> output layer
     """
 
-    def __init__(self, hidden_layers=None, hidden_layer_dim=None):
+    def __init__(self, hidden_layers=None, hidden_layer_dim=None, hidden_layer_dims=None):
 
         # Declare number of neurons in the input & output layers
         self.input_dims = settings.IN_DIMS
         self.output_dims = settings.OUT_DIM
 
-        # Declare number of hidden layers & neurons
-        self.hidden_layers = settings.HIDDEN_LAYERS if hidden_layers is None else hidden_layers
-        self.hidden_layers_dim = settings.HIDDEN_LAYER_DIM if hidden_layer_dim is None else hidden_layer_dim
+        if hidden_layer_dims is None:
+            hidden_layers = settings.HIDDEN_LAYERS if hidden_layers is None else hidden_layers
+            hidden_layer_dim = settings.HIDDEN_LAYER_DIM if hidden_layer_dim is None else hidden_layer_dim
+            hidden_layer_dims = [hidden_layer_dim] * hidden_layers
+
+        self.hidden_layer_dims = list(hidden_layer_dims)
+        self.hidden_layers = len(self.hidden_layer_dims)
+        self.hidden_layers_dim = self.hidden_layer_dims[0] if self.hidden_layer_dims else 0
 
         # To Store all the layers within a single array
         self.layer_array : List[Layer] = []
@@ -28,9 +33,9 @@ class NeuralNetwork:
         self.layer_array.append(self.input_layer)
 
         # Create Hidden Layers
-        for _ in range(self.hidden_layers):
+        for layer_dim in self.hidden_layer_dims:
             previousLayerDim = self.layer_array[-1].neuronDim
-            new_hidden_layer = Layer(previousLayerDim, self.hidden_layers_dim, LayerType.HIDDEN)
+            new_hidden_layer = Layer(previousLayerDim, layer_dim, LayerType.HIDDEN)
             self.layer_array.append(new_hidden_layer)
 
         # Creating Output Layer

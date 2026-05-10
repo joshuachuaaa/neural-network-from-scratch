@@ -22,6 +22,15 @@ def test_hidden_layer_count_matches_settings():
     assert len(hidden_layers) == settings.HIDDEN_LAYERS
 
 
+def test_network_accepts_per_layer_hidden_dimensions():
+    network = NeuralNetwork(hidden_layer_dims=[8, 4])
+
+    hidden_layers = [layer for layer in network.layer_array if layer.layerType is LayerType.HIDDEN]
+
+    assert [layer.neuronDim for layer in hidden_layers] == [8, 4]
+    assert network.predict(np.zeros((2, settings.IN_DIMS))).shape == (2, settings.OUT_DIM)
+
+
 def test_backprop_populates_gradients_matching_weight_shapes():
     network = NeuralNetwork()
     batch = np.zeros((2, settings.IN_DIMS))

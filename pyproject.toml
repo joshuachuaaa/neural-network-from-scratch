@@ -13,6 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
+nnfs = "neural_network_from_scratch.cli:main"
 nnfs-train = "neural_network_from_scratch.train:main"
 nnfs-visual = "neural_network_from_scratch.visual_train:main"
 
