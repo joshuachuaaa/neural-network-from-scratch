@@ -8,9 +8,9 @@ class LayerType(Enum):
     OUTPUT = "Output"
     HIDDEN = "Hidden"
 
-class Layer : 
+class Layer:
 
-    def __init__( self, inputDim:int, neuronDim:int, layerType:LayerType):
+    def __init__(self, inputDim: int | None, neuronDim: int, layerType: LayerType):
         """
         Initialization of Layer Class
         Type of Layer determined by activation type
@@ -24,10 +24,12 @@ class Layer :
             self.biases = np.zeros((1, neuronDim))
 
             self.errorVector = np.zeros((1, neuronDim))
+            self.biasGradient = np.zeros((1, neuronDim))
             self.gradientMatrix = np.zeros((inputDim, neuronDim))
 
         # For sake of clarity,
         self.input = None
+        self.preActivatedNeurons = np.zeros((1, neuronDim))
         self.activatedNeurons = np.zeros((1, neuronDim))
         self.boolActiveNeurons = np.zeros((1, neuronDim))
         
@@ -39,18 +41,18 @@ class Layer :
         """
         # If Input Layer, Do Nothing
         if self.layerType == LayerType.INPUT:
+            self.input = X
+            self.activatedNeurons = X
+            self.boolActiveNeurons = np.ones_like(X)
             return X
         
         # Calculate Neuron Value if Hidden or Output Layer
         self.input = X
-        preActivatedNeurons = (X @ self.weights) + self.biases
-        activatedNeurons = self._activate(preActivatedNeurons)
+        self.preActivatedNeurons = (X @ self.weights) + self.biases
+        activatedNeurons = self._activate(self.preActivatedNeurons)
 
-        # ReLU Mask
+        # ReLU derivative mask for hidden layers. Output masks are not used in backprop.
         self.boolActiveNeurons = self.getActiveNeurons()
-
-        # Debugging: Print summary statistics of activations
-        #print(f"Layer {self.layerType} - Activated Neurons Mean: {np.mean(activatedNeurons):.4f}, Std: {np.std(activatedNeurons):.4f}")
         
         return activatedNeurons
 
@@ -79,36 +81,11 @@ class Layer :
         if self.layerType == LayerType.INPUT:
             return
 
-        # Debugging: Print summary statistics of weights and biases before update
-        #print(f"Before update - Weights Mean: {np.mean(self.weights):.4f}, Std: {np.std(self.weights):.4f}")
-        #print(f"Before update - Biases Mean: {np.mean(self.biases):.4f}, Std: {np.std(self.biases):.4f}")
-
         # Update the biases
-        self.biases -= learning_rate * self.errorVector
+        self.biases -= learning_rate * self.biasGradient
 
         # Update the weights
         self.weights -= learning_rate * self.gradientMatrix
-
-        # Debugging: Print summary statistics of weights and biases after update
-        #print(f"After update - Weights Mean: {np.mean(self.weights):.4f}, Std: {np.std(self.weights):.4f}")
-        #print(f"After update - Biases Mean: {np.mean(self.biases):.4f}, Std: {np.std(self.biases):.4f}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-        
-
 
 
         

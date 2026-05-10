@@ -1,4 +1,3 @@
-from enum import Enum
 import numpy as np
 
 class Softmax:
@@ -20,7 +19,7 @@ class ReLU:
 
     @staticmethod
     def activate(neuron_vector):
-        """Applies ReLU activation using np.maximium"""
+        """Applies ReLU activation."""
         return np.maximum(0, neuron_vector)
     
     @staticmethod
@@ -28,5 +27,4 @@ class ReLU:
         """Check if Neuron is active, assign 1 or 0"""
         return np.where(neuron_vector > 0, 1, 0)
         
-
 

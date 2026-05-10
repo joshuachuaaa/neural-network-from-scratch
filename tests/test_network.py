@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 
 from neural_network_from_scratch import settings
 from neural_network_from_scratch.layers import LayerType
@@ -15,7 +14,6 @@ def test_predict_returns_batch_by_output_dimension():
     np.testing.assert_allclose(predictions.sum(axis=1), np.ones(3))
 
 
-@pytest.mark.xfail(reason="Current constructor creates HIDDEN_LAYERS - 1 hidden layers.")
 def test_hidden_layer_count_matches_settings():
     network = NeuralNetwork()
 
@@ -24,7 +22,6 @@ def test_hidden_layer_count_matches_settings():
     assert len(hidden_layers) == settings.HIDDEN_LAYERS
 
 
-@pytest.mark.xfail(reason="Current backpropagation has incompatible batch matrix shapes.")
 def test_backprop_populates_gradients_matching_weight_shapes():
     network = NeuralNetwork()
     batch = np.zeros((2, settings.IN_DIMS))
@@ -39,3 +36,27 @@ def test_backprop_populates_gradients_matching_weight_shapes():
         assert layer.gradientMatrix.shape == layer.weights.shape
         assert layer.errorVector.shape == layer.biases.shape
 
+
+def test_one_training_step_updates_non_input_weights():
+    network = NeuralNetwork()
+    batch = np.random.default_rng(0).normal(size=(2, settings.IN_DIMS))
+    labels = np.eye(settings.OUT_DIM)[[0, 1]]
+    network.predict(batch)
+
+    before = [
+        layer.weights.copy()
+        for layer in network.layer_array
+        if layer.layerType is not LayerType.INPUT
+    ]
+
+    network.backProp(labels)
+    for layer in network.layer_array:
+        layer.updateValues(settings.LEARNING_RATE)
+
+    after = [
+        layer.weights
+        for layer in network.layer_array
+        if layer.layerType is not LayerType.INPUT
+    ]
+
+    assert any(not np.array_equal(old, new) for old, new in zip(before, after))

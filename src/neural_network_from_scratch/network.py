@@ -28,30 +28,17 @@ class NeuralNetwork:
         self.layer_array.append(self.input_layer)
 
         # Create Hidden Layers
-        if self.hidden_layers > 0:
-
-            #Create and connect hidden layers
-            for idx in range(1,self.hidden_layers):
-
-                # Get previous layer output Dimensions
-                previousLayerDim = self.layer_array[idx - 1].neuronDim
-
-                # Create the new hidden array ( hooking up the previous array )
-                new_hidden_layer = Layer(previousLayerDim, self.hidden_layers_dim, LayerType.HIDDEN)
-
-                # Add this Layer to the array
-                self.layer_array.append(new_hidden_layer)
-            
-        # Last Hidden Layer Neuron Dimensions
-        previousLayerDim = self.layer_array[idx - 1].neuronDim
+        for _ in range(self.hidden_layers):
+            previousLayerDim = self.layer_array[-1].neuronDim
+            new_hidden_layer = Layer(previousLayerDim, self.hidden_layers_dim, LayerType.HIDDEN)
+            self.layer_array.append(new_hidden_layer)
 
         # Creating Output Layer
+        previousLayerDim = self.layer_array[-1].neuronDim
         self.output_layer : Layer = Layer(previousLayerDim, self.output_dims, LayerType.OUTPUT)
 
         # Add it to Array
         self.layer_array.append(self.output_layer)
-
-        print(self.layer_array)
 
     def predict(self, X):
         """To feed data forward and get the predicted result"""
@@ -63,41 +50,30 @@ class NeuralNetwork:
 
     def backProp(self, y_batch):
         """Back propagate the error for training and weight/bias adjustment"""
+        batch_size = y_batch.shape[0]
+        delta = self._calcFinalError(y_batch) / batch_size
 
-        for idx, layer in enumerate(reversed(self.layer_array)):
-
-            # Stops when reaches input
-            if layer.layerType is LayerType.INPUT:
-                return
-
-
-            # Get reference to previous
+        for idx in range(len(self.layer_array) - 1, 0, -1):
+            layer = self.layer_array[idx]
             previousLayer = self.layer_array[idx - 1]
-            
-            if layer.layerType is LayerType.OUTPUT:
-                layer.errorVector = self._calcFinalError(y_batch)
-            
-            previousLayer.errorVector = self.calcErrorTerm(previousLayer, layer)
 
-            # Get the Gradient Vector
-            layer.gradientMatrix = self._calcGradientMatrix(layer, previousLayer)
+            layer.errorVector = np.sum(delta, axis=0, keepdims=True)
+            layer.biasGradient = layer.errorVector
+            layer.gradientMatrix = self._calcGradientMatrix(delta, previousLayer)
 
-            # Debugging: Print summary statistics of gradients
-            print(f"Layer {idx} - Gradient Matrix Mean: {np.mean(layer.gradientMatrix):.4f}, Std: {np.std(layer.gradientMatrix):.4f}")
+            if previousLayer.layerType is not LayerType.INPUT:
+                delta = self.calcErrorTerm(delta, previousLayer, layer)
 
-        return 
+        return
         
     def _calcFinalError(self, rightVals):
         """Find the error term in the output"""
-        print(rightVals.shape)
-        return rightVals - self.layer_array[-1].activatedNeurons
+        return self.layer_array[-1].activatedNeurons - rightVals
     
-    def _calcGradientMatrix(self, layer , prevLayer):
+    def _calcGradientMatrix(self, delta, prevLayer):
         """Returns the gradient matrix"""
-        return layer.errorVector @ np.transpose(prevLayer.boolActiveNeurons)
+        return np.transpose(prevLayer.activatedNeurons) @ delta
     
-    def calcErrorTerm(self, layer : Layer, nextLayer : Layer):
+    def calcErrorTerm(self, delta, layer: Layer, nextLayer: Layer):
         """Find Error term for layer"""
-        print(layer.errorVector.shape)
-        return ( np.transpose(nextLayer.weights) @ layer.errorVector)  * (layer.boolActiveNeurons)
-
+        return (delta @ np.transpose(nextLayer.weights)) * layer.boolActiveNeurons
