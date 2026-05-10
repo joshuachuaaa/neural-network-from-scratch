@@ -5,8 +5,7 @@ from neural_network_from_scratch.data import load_mnist_images, load_mnist_label
 from neural_network_from_scratch import settings
 from neural_network_from_scratch.network import NeuralNetwork
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "mnist"
+DEFAULT_DATA_DIR = Path("data") / "mnist"
 
 
 def iter_batches(features, targets, batch_size, rng=None, shuffle=True):
