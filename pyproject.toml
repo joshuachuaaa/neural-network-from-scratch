@@ -1,0 +1,18 @@
+[project]
+name = "neural-network-from-scratch"
+version = "0.1.0"
+description = "A from-scratch NumPy neural network for MNIST digit classification."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
