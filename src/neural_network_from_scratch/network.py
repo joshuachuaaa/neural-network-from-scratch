@@ -10,15 +10,15 @@ class NeuralNetwork:
     Create input layer -> hidden layers -> output layer
     """
 
-    def __init__(self):
+    def __init__(self, hidden_layers=None, hidden_layer_dim=None):
 
         # Declare number of neurons in the input & output layers
         self.input_dims = settings.IN_DIMS
         self.output_dims = settings.OUT_DIM
 
         # Declare number of hidden layers & neurons
-        self.hidden_layers = settings.HIDDEN_LAYERS
-        self.hidden_layers_dim = settings.HIDDEN_LAYER_DIM
+        self.hidden_layers = settings.HIDDEN_LAYERS if hidden_layers is None else hidden_layers
+        self.hidden_layers_dim = settings.HIDDEN_LAYER_DIM if hidden_layer_dim is None else hidden_layer_dim
 
         # To Store all the layers within a single array
         self.layer_array : List[Layer] = []

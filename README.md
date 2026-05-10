@@ -85,6 +85,41 @@ After editable install:
 nnfs-train
 ```
 
+## Terminal Visualization
+
+Run a Rich-powered terminal dashboard that shows:
+
+- the configured network layers
+- sampled layer activations
+- weight mean/standard deviation per layer
+- per-batch update magnitude
+- a rendered MNIST sample
+- live output probabilities during training
+
+Quick visual smoke run:
+
+```bash
+PYTHONPATH=src python -m neural_network_from_scratch.visual_train \
+  --epochs 1 \
+  --limit-train 128 \
+  --limit-test 32 \
+  --batch-size 32 \
+  --hidden-layers 2 \
+  --hidden-neurons 32
+```
+
+Interactive prompt mode:
+
+```bash
+PYTHONPATH=src python -m neural_network_from_scratch.visual_train --interactive
+```
+
+After editable install, use:
+
+```bash
+nnfs-visual --interactive
+```
+
 ## Test
 
 ```bash
