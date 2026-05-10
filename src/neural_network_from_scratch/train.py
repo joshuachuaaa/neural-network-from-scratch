@@ -1,28 +1,12 @@
 import numpy as np
-import struct
-import gzip
 from pathlib import Path
 
-from neural_network_from_scratch.network import NeuralNetwork
+from neural_network_from_scratch.data import load_mnist_images, load_mnist_labels, one_hot_encode
 from neural_network_from_scratch import settings
+from neural_network_from_scratch.network import NeuralNetwork
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "mnist"
-
-def load_mnist_images(filename):
-    with gzip.open(filename, 'rb') as f:
-        magic, num, rows, cols = struct.unpack(">IIII", f.read(16))
-        images = np.frombuffer(f.read(), dtype=np.uint8).reshape(num, 784)
-        return images / 255.0  # Normalize to [0, 1]
-
-def load_mnist_labels(filename):
-    with gzip.open(filename, 'rb') as f:
-        magic, num = struct.unpack(">II", f.read(8))
-        labels = np.frombuffer(f.read(), dtype=np.uint8)
-        return labels
-
-def one_hot_encode(y, num_classes=10):
-    return np.eye(num_classes)[y]
 
 def calculate_loss(predictions, targets):
     """Calculate the cross-entropy loss."""

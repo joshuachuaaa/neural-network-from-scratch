@@ -3,7 +3,7 @@ import struct
 
 import numpy as np
 
-from neural_network_from_scratch.train import load_mnist_images, load_mnist_labels
+from neural_network_from_scratch.data import load_mnist_images, load_mnist_labels, one_hot_encode
 
 
 def test_load_mnist_images_reads_and_normalizes_idx_gzip(tmp_path):
@@ -31,3 +31,26 @@ def test_load_mnist_labels_reads_idx_gzip(tmp_path):
 
     np.testing.assert_array_equal(labels, np.array([7, 2, 9], dtype=np.uint8))
 
+
+def test_load_mnist_images_rejects_wrong_dimensions(tmp_path):
+    path = tmp_path / "images.gz"
+
+    with gzip.open(path, "wb") as handle:
+        handle.write(struct.pack(">IIII", 2051, 1, 14, 14))
+        handle.write(bytes(14 * 14))
+
+    try:
+        load_mnist_images(path)
+    except ValueError as error:
+        assert "Expected 28x28 images" in str(error)
+    else:
+        raise AssertionError("Expected invalid dimensions to raise ValueError")
+
+
+def test_one_hot_encode_rejects_out_of_range_labels():
+    try:
+        one_hot_encode(np.array([0, 10]))
+    except ValueError as error:
+        assert "Labels must be in range" in str(error)
+    else:
+        raise AssertionError("Expected out-of-range label to raise ValueError")

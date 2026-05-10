@@ -1,5 +1,7 @@
 # Number of Neurons in the input layer
-IN_DIMS = 784
+MNIST_IMAGE_ROWS = 28
+MNIST_IMAGE_COLS = 28
+IN_DIMS = MNIST_IMAGE_ROWS * MNIST_IMAGE_COLS
 
 # Number of Neurons in the output layer
 OUT_DIM = 10
@@ -18,7 +20,6 @@ BATCH_SIZE = 64
 
 # Number of Epochs
 EPOCHS = 10 
-
 
 
 
