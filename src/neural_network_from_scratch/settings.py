@@ -21,6 +21,8 @@ BATCH_SIZE = 64
 # Number of Epochs
 EPOCHS = 10 
 
+# Deterministic default for reproducible training order.
+RANDOM_SEED = 42
 
 
 

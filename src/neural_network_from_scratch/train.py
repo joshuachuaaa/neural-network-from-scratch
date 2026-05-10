@@ -8,9 +8,50 @@ from neural_network_from_scratch.network import NeuralNetwork
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data" / "mnist"
 
+
+def iter_batches(features, targets, batch_size, rng=None, shuffle=True):
+    indices = np.arange(len(features))
+    if shuffle:
+        if rng is None:
+            rng = np.random.default_rng()
+        rng.shuffle(indices)
+
+    for start in range(0, len(indices), batch_size):
+        batch_indices = indices[start:start + batch_size]
+        yield features[batch_indices], targets[batch_indices]
+
 def calculate_loss(predictions, targets):
     """Calculate the cross-entropy loss."""
     return -np.sum(targets * np.log(predictions + 1e-9)) / targets.shape[0]
+
+
+def train_epoch(network, X_train, y_train_encoded, batch_size, learning_rate, rng):
+    epoch_loss = 0.0
+    correct_predictions = 0
+    samples_seen = 0
+
+    for X_batch, y_batch in iter_batches(X_train, y_train_encoded, batch_size, rng=rng):
+        predictions = network.predict(X_batch)
+        network.backProp(y_batch)
+        for layer in network.layer_array:
+            layer.updateValues(learning_rate)
+
+        batch_size_actual = len(X_batch)
+        epoch_loss += calculate_loss(predictions, y_batch) * batch_size_actual
+        correct_predictions += np.sum(np.argmax(predictions, axis=1) == np.argmax(y_batch, axis=1))
+        samples_seen += batch_size_actual
+
+    return epoch_loss / samples_seen, correct_predictions / samples_seen
+
+
+def evaluate_accuracy(network, X_test, y_test, batch_size):
+    correct_predictions = 0
+
+    for X_batch, y_batch in iter_batches(X_test, y_test, batch_size, shuffle=False):
+        predictions = network.predict(X_batch)
+        correct_predictions += np.sum(np.argmax(predictions, axis=1) == y_batch)
+
+    return correct_predictions / len(y_test)
 
 def main(data_dir=DEFAULT_DATA_DIR):
     data_dir = Path(data_dir)
@@ -25,46 +66,21 @@ def main(data_dir=DEFAULT_DATA_DIR):
 
     # Initialize the neural network
     nn = NeuralNetwork()
-    
-    # Train the network using mini-batch gradient descent
-    num_batches = len(X_train) // settings.BATCH_SIZE
+    rng = np.random.default_rng(settings.RANDOM_SEED)
     
     for epoch in range(settings.EPOCHS):
-        epoch_loss = 0
-        correct_predictions = 0
-        
-        for batch in range(num_batches):
-            start = batch * settings.BATCH_SIZE
-            end = start + settings.BATCH_SIZE
-            X_batch = X_train[start:end]
-            y_batch = y_train_encoded[start:end]
-            
-            # Forward and backward pass for each mini-batch
-            predictions = nn.predict(X_batch)
-            nn.backProp(y_batch)
-            for layer in nn.layer_array:
-                layer.updateValues(settings.LEARNING_RATE)
-            
-            # Calculate loss
-            batch_loss = calculate_loss(predictions, y_batch)
-            epoch_loss += batch_loss
-            
-            # Calculate accuracy
-            correct_predictions += np.sum(np.argmax(predictions, axis=1) == np.argmax(y_batch, axis=1))
-        
-        # Print epoch progress
-        epoch_accuracy = correct_predictions / len(X_train)
-        print(epoch_loss)
-        print(f"Epoch {epoch + 1} complete - Loss: {epoch_loss / num_batches:.4f}, Accuracy: {epoch_accuracy * 100:.2f}%")
+        epoch_loss, epoch_accuracy = train_epoch(
+            nn,
+            X_train,
+            y_train_encoded,
+            settings.BATCH_SIZE,
+            settings.LEARNING_RATE,
+            rng,
+        )
+        print(f"Epoch {epoch + 1} complete - Loss: {epoch_loss:.4f}, Accuracy: {epoch_accuracy * 100:.2f}%")
     
     # Evaluate the network
-    correct_predictions = 0
-    for i in range(len(X_test)):
-        prediction = nn.predict(X_test[i:i+1])
-        if np.argmax(prediction) == y_test[i]:
-            correct_predictions += 1
-    
-    accuracy = correct_predictions / len(y_test)
+    accuracy = evaluate_accuracy(nn, X_test, y_test, settings.BATCH_SIZE)
     print(f"Test accuracy: {accuracy * 100:.2f}%")
 
 if __name__ == "__main__":
