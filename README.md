@@ -65,6 +65,12 @@ data/mnist/t10k-labels-idx1-ubyte.gz
 
 The loader validates IDX magic numbers, image dimensions, byte counts, and label ranges before training.
 
+To verify the tracked dataset files against the checksum manifest:
+
+```bash
+python scripts/verify_mnist.py
+```
+
 ## Run
 
 From the repository root:
@@ -86,4 +92,3 @@ pytest
 ```
 
 The test suite covers activations, MNIST loading validation, network topology, forward output shape, backpropagation gradient shapes, one training update, batching, and evaluation helpers.
-
