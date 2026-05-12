@@ -45,7 +45,7 @@ def _bar(value: float, width: int = 18) -> str:
     return "█" * filled + " " * (width - filled)
 
 
-def _sparkline(values, width: int = 24) -> str:
+def sparkline(values, width: int = 24) -> str:
     array = np.asarray(values).ravel()
     if array.size == 0:
         return ""
@@ -88,7 +88,7 @@ def layer_table(network, update_norms=None) -> Table:
             str(index),
             layer.layerType.value,
             str(layer.neuronDim),
-            _sparkline(activations[0] if activations.ndim > 1 else activations),
+            sparkline(activations[0] if activations.ndim > 1 else activations),
             f"{activation_mean:.3f}/{activation_max:.3f}",
             weight_summary,
             update_summary,

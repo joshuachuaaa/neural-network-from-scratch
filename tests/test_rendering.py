@@ -4,7 +4,7 @@ from rich.table import Table
 from rich.text import Text
 
 from neural_network_from_scratch.network import NeuralNetwork
-from neural_network_from_scratch.rendering import VisualMetrics, dashboard, layer_table, probability_table, render_digit
+from neural_network_from_scratch.rendering import VisualMetrics, dashboard, layer_table, probability_table, render_digit, sparkline
 from neural_network_from_scratch.visual_train import layer_update_norms
 
 
@@ -21,6 +21,10 @@ def test_layer_and_probability_tables_are_rich_tables():
 
     assert isinstance(layer_table(network), Table)
     assert isinstance(probability_table(np.ones(10) / 10, label=3), Table)
+
+
+def test_sparkline_limits_width():
+    assert len(sparkline(range(100), width=10)) == 10
 
 
 def test_dashboard_is_rich_layout():

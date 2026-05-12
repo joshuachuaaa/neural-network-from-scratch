@@ -99,7 +99,7 @@ After editable install:
 nnfs
 ```
 
-The main menu lets you add/remove hidden layers, change neuron counts, build or reset the model, train with a live dashboard, evaluate, run inference on MNIST samples, and save/load checkpoints. Editing the architecture resets the current model so training and inference always match the architecture shown on the main screen.
+The main menu shows a terminal-native network map, session state, and recent training history. It lets you add/remove hidden layers, change neuron counts, build or reset the model, train with a live dashboard, evaluate, run inference on MNIST samples, and save/load checkpoints. Editing the architecture resets the current model so training and inference always match the architecture shown on the main screen.
 
 Run a Rich-powered terminal dashboard that shows:
 
