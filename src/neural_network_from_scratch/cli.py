@@ -13,6 +13,7 @@ from rich.table import Table
 from rich.text import Text
 
 from neural_network_from_scratch import settings
+from neural_network_from_scratch.checkpoints import load_checkpoint, save_checkpoint
 from neural_network_from_scratch.data import load_mnist_images, load_mnist_labels, one_hot_encode
 from neural_network_from_scratch.network import NeuralNetwork
 from neural_network_from_scratch.rendering import VisualMetrics, dashboard, probability_table, render_digit
@@ -29,6 +30,7 @@ class AppState:
     last_accuracy: float | None = None
     last_eval_accuracy: float | None = None
     data_dir: Path = DEFAULT_DATA_DIR
+    checkpoint_path: Path | None = None
 
 
 def architecture_summary(hidden_layers: list[int]) -> str:
@@ -64,6 +66,7 @@ def status_table(state: AppState) -> Table:
     table.add_row("Last train loss", "-" if state.last_loss is None else f"{state.last_loss:.4f}")
     table.add_row("Last train accuracy", "-" if state.last_accuracy is None else f"{state.last_accuracy * 100:.2f}%")
     table.add_row("Last eval accuracy", "-" if state.last_eval_accuracy is None else f"{state.last_eval_accuracy * 100:.2f}%")
+    table.add_row("Checkpoint", "-" if state.checkpoint_path is None else str(state.checkpoint_path))
     return table
 
 
@@ -78,7 +81,9 @@ def menu_table() -> Table:
     table.add_row("5", "Train current model")
     table.add_row("6", "Run inference on MNIST sample")
     table.add_row("7", "Evaluate current model")
-    table.add_row("8", "Show current model screen")
+    table.add_row("8", "Save checkpoint")
+    table.add_row("9", "Load checkpoint")
+    table.add_row("10", "Show current model screen")
     table.add_row("0", "Exit")
     return table
 
@@ -101,6 +106,7 @@ def mark_architecture_changed(state: AppState):
     state.last_loss = None
     state.last_accuracy = None
     state.last_eval_accuracy = None
+    state.checkpoint_path = None
 
 
 def add_hidden_layer(state: AppState):
@@ -235,6 +241,27 @@ def evaluate_current_model(state: AppState, console: Console):
     console.print(f"[green]Evaluation accuracy:[/green] {state.last_eval_accuracy * 100:.2f}%")
 
 
+def save_current_checkpoint(state: AppState, console: Console):
+    ensure_network(state)
+    default_path = Path("artifacts") / "model.npz"
+    checkpoint_path = Path(Prompt.ask("Checkpoint path", default=str(default_path)))
+    state.checkpoint_path = save_checkpoint(state.network, checkpoint_path)
+    console.print(f"[green]Saved checkpoint:[/green] {state.checkpoint_path}")
+
+
+def load_model_checkpoint(state: AppState, console: Console):
+    default_path = state.checkpoint_path or Path("artifacts") / "model.npz"
+    checkpoint_path = Path(Prompt.ask("Checkpoint path", default=str(default_path)))
+    state.network = load_checkpoint(checkpoint_path)
+    state.hidden_layers = list(state.network.hidden_layer_dims)
+    state.trained_epochs = 0
+    state.last_loss = None
+    state.last_accuracy = None
+    state.last_eval_accuracy = None
+    state.checkpoint_path = checkpoint_path
+    console.print(f"[green]Loaded checkpoint:[/green] {checkpoint_path}")
+
+
 def wait_for_user():
     Prompt.ask("\nPress Enter to continue", default="")
 
@@ -246,7 +273,7 @@ def run_app(console: Console | None = None):
     while True:
         console.clear()
         console.print(main_screen(state))
-        choice = Prompt.ask("Choose an action", choices=[str(number) for number in range(9)], default="0")
+        choice = Prompt.ask("Choose an action", choices=[str(number) for number in range(11)], default="0")
 
         try:
             if choice == "0":
@@ -275,6 +302,12 @@ def run_app(console: Console | None = None):
                 evaluate_current_model(state, console)
                 wait_for_user()
             elif choice == "8":
+                save_current_checkpoint(state, console)
+                wait_for_user()
+            elif choice == "9":
+                load_model_checkpoint(state, console)
+                wait_for_user()
+            elif choice == "10":
                 wait_for_user()
         except Exception as error:
             console.print(f"[bold red]Error:[/bold red] {error}")
@@ -287,4 +320,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
