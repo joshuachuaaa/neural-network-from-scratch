@@ -1,57 +1,113 @@
 # Neural Network from Scratch
 
-This repository implements a small fully connected neural network for MNIST digit classification using NumPy. The code is organized as an educational project: activation functions, layer state, network orchestration, data loading, and training are separated into focused modules.
+![Interactive terminal UI](docs/assets/terminal-ui.png)
 
-## Project Structure
+An educational neural-network playground built with NumPy and Rich. The project implements a fully connected MNIST classifier from first principles, then wraps it in a polished terminal interface where you can design the network, train it, inspect activations, watch weights update, run inference, evaluate accuracy, and save/load checkpoints.
 
-```text
-.
-├── data/mnist/                         # MNIST gzip files
-├── docs/assets/                        # README screenshots and project media
-├── src/neural_network_from_scratch/
-│   ├── activations.py                  # ReLU and Softmax
-│   ├── data.py                         # MNIST IDX gzip loading and validation
-│   ├── layers.py                       # Layer state, forward pass, parameter updates
-│   ├── network.py                      # Network topology, predict, backpropagation
-│   ├── settings.py                     # Model and training constants
-│   └── train.py                        # Training/evaluation orchestration
-├── tests/                              # Unit tests and smoke coverage
-├── main.py                             # Backwards-compatible script entrypoint
-├── pyproject.toml
-└── requirements.txt
-```
+The goal is not to hide the math behind a framework. The goal is to make the moving parts visible: layers, neurons, activations, gradients, predictions, and training metrics are all exposed in the terminal.
 
-## Runtime Flow
+![Terminal workspace screenshot](docs/assets/terminal-ui-latest.png)
 
-1. `main.py` calls `neural_network_from_scratch.train.main()`.
-2. `data.py` loads and validates MNIST gzip files from `data/mnist/`.
-3. `Network` builds an input layer, configured hidden layers, and an output layer.
-4. `predict()` performs the forward pass.
-5. `backProp()` computes batch gradients for all non-input layers.
-6. `Layer.updateValues()` applies gradient descent updates.
-7. Training prints epoch loss/accuracy, then batched test accuracy.
+## What You Can Do
 
-## Model
+- Build a neural network interactively from the terminal.
+- Add, remove, and resize hidden layers before training.
+- Train on MNIST while watching a live Rich dashboard.
+- See layer activations, weight statistics, and update magnitudes during training.
+- Render MNIST samples directly in the terminal.
+- Run inference against test samples and inspect output probabilities.
+- Evaluate test accuracy.
+- Save and load model checkpoints as `.npz` files.
+- Read the implementation without needing PyTorch, TensorFlow, or Keras.
 
-- Input dimension: `28 * 28 = 784`
-- Output classes: `10`
-- Hidden layers: configured in `settings.py`
-- Hidden activation: ReLU
-- Output activation: Softmax
-- Loss: cross-entropy
-- Optimization: mini-batch gradient descent
+## Quick Start
 
-## Setup
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-For editable package usage:
+From the repository root:
 
 ```bash
 python -m pip install -e ".[dev]"
+python scripts/verify_mnist.py
+nnfs
 ```
+
+If you do not want to install the package in editable mode:
+
+```bash
+python -m pip install -r requirements.txt
+PYTHONPATH=src python -m neural_network_from_scratch.cli
+```
+
+## Main Commands
+
+```bash
+nnfs
+```
+
+Launches the interactive terminal lab. This is the best entrypoint for exploring the project.
+
+```bash
+nnfs-train
+```
+
+Runs the standard training flow without the interactive menu.
+
+```bash
+nnfs-visual --interactive
+```
+
+Runs the visual training dashboard with prompt-based configuration.
+
+```bash
+pytest
+```
+
+Runs the test suite.
+
+## Terminal Lab
+
+The `nnfs` menu is designed to feel like a small terminal application rather than a one-off script. The main screen shows:
+
+- the current network architecture;
+- parameter counts per layer;
+- whether a model is currently built;
+- training history;
+- last loss and accuracy;
+- checkpoint path;
+- menu actions grouped by design, model, run, and artifact tasks.
+
+During training, the live dashboard shows:
+
+- layer-by-layer activation samples;
+- activation mean and max values;
+- weight mean and standard deviation;
+- gradient update magnitudes;
+- the watched MNIST sample;
+- output probabilities for digits `0` through `9`;
+- loss and accuracy for the current training run.
+
+The watched MNIST sample is only a visualization target. Training still happens on batches from the training set.
+
+## How It Works
+
+The model is a plain fully connected classifier:
+
+- input dimension: `28 * 28 = 784`;
+- output classes: `10`;
+- hidden layers: configurable;
+- hidden activation: ReLU;
+- output activation: Softmax;
+- loss: cross-entropy;
+- optimizer: mini-batch gradient descent.
+
+Runtime flow:
+
+1. MNIST IDX gzip files are loaded and validated from `data/mnist/`.
+2. `NeuralNetwork` builds an input layer, zero or more hidden layers, and an output layer.
+3. `predict()` performs the forward pass.
+4. `backProp()` calculates gradients for trainable layers.
+5. `Layer.updateValues()` applies gradient descent updates.
+6. Training metrics and visual state are rendered with Rich.
+7. Checkpoints can be saved and loaded through NumPy `.npz` files.
 
 ## Data
 
@@ -66,83 +122,49 @@ data/mnist/t10k-labels-idx1-ubyte.gz
 
 The loader validates IDX magic numbers, image dimensions, byte counts, and label ranges before training.
 
-To verify the tracked dataset files against the checksum manifest:
+Verify the tracked dataset files with:
 
 ```bash
 python scripts/verify_mnist.py
 ```
 
-## Run
+## Project Structure
 
-From the repository root:
-
-```bash
-python main.py
+```text
+.
+├── data/mnist/                         # MNIST gzip files and checksum manifest
+├── docs/assets/                        # README screenshots and project media
+├── scripts/
+│   └── verify_mnist.py                 # MNIST checksum verification
+├── src/neural_network_from_scratch/
+│   ├── activations.py                  # ReLU and Softmax
+│   ├── checkpoints.py                  # Save/load model checkpoints
+│   ├── cli.py                          # Interactive Rich terminal app
+│   ├── data.py                         # MNIST IDX gzip loading and validation
+│   ├── layers.py                       # Layer state, forward pass, updates
+│   ├── network.py                      # Network topology, predict, backpropagation
+│   ├── rendering.py                    # Rich renderables for dashboards and tables
+│   ├── settings.py                     # Model and training defaults
+│   ├── train.py                        # Standard training/evaluation orchestration
+│   └── visual_train.py                 # Live visual training entrypoint
+├── tests/                              # Unit tests and smoke coverage
+├── main.py                             # Backwards-compatible script entrypoint
+├── pyproject.toml                      # Package metadata and console scripts
+└── requirements.txt                    # Runtime dependencies
 ```
 
-After editable install:
+## Development
+
+Install development dependencies:
 
 ```bash
-nnfs-train
+python -m pip install -e ".[dev]"
 ```
 
-## Terminal Visualization
-
-![Interactive terminal UI](docs/assets/terminal-ui.png)
-
-![Terminal workspace screenshot](docs/assets/terminal-ui-latest.png)
-
-Launch the interactive terminal lab:
-
-```bash
-PYTHONPATH=src python -m neural_network_from_scratch.cli
-```
-
-After editable install:
-
-```bash
-nnfs
-```
-
-The main menu shows a terminal-native network map, session state, and recent training history. It lets you add/remove hidden layers, change neuron counts, build or reset the model, train with a live dashboard, evaluate, run inference on MNIST samples, and save/load checkpoints. Editing the architecture resets the current model so training and inference always match the architecture shown on the main screen.
-
-Run a Rich-powered terminal dashboard that shows:
-
-- the configured network layers
-- sampled layer activations
-- weight mean/standard deviation per layer
-- per-batch update magnitude
-- a rendered MNIST sample
-- live output probabilities during training
-
-Quick visual smoke run:
-
-```bash
-PYTHONPATH=src python -m neural_network_from_scratch.visual_train \
-  --epochs 1 \
-  --limit-train 128 \
-  --limit-test 32 \
-  --batch-size 32 \
-  --hidden-layers 2 \
-  --hidden-neurons 32
-```
-
-Interactive prompt mode:
-
-```bash
-PYTHONPATH=src python -m neural_network_from_scratch.visual_train --interactive
-```
-
-After editable install, use:
-
-```bash
-nnfs-visual --interactive
-```
-
-## Test
+Run tests:
 
 ```bash
 pytest
 ```
 
-The test suite covers activations, MNIST loading validation, network topology, forward output shape, backpropagation gradient shapes, one training update, batching, and evaluation helpers.
+The test suite covers activation functions, MNIST loading validation, network topology, forward output shape, backpropagation gradient shapes, one training update, batching, rendering smoke checks, checkpoint round-tripping, and evaluation helpers.
