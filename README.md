@@ -90,6 +90,8 @@ nnfs-train
 
 ![Interactive terminal UI](docs/assets/terminal-ui.png)
 
+![Terminal workspace screenshot](docs/assets/terminal-ui-latest.png)
+
 Launch the interactive terminal lab:
 
 ```bash
