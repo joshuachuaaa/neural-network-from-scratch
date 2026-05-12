@@ -5,7 +5,8 @@ from dataclasses import dataclass
 import numpy as np
 from rich import box
 from rich.align import Align
-from rich.layout import Layout
+from rich.columns import Columns
+from rich.console import Group
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -55,7 +56,8 @@ def sparkline(values, width: int = 24) -> str:
     min_value = float(np.min(array))
     max_value = float(np.max(array))
     if max_value == min_value:
-        scaled = np.zeros_like(array, dtype=int)
+        block_index = len(BLOCKS) - 1 if max_value > 0 else 0
+        scaled = np.full(array.shape, block_index, dtype=int)
     else:
         scaled = np.round((array - min_value) / (max_value - min_value) * (len(BLOCKS) - 1)).astype(int)
     return "".join(BLOCKS[index] for index in scaled)
@@ -66,10 +68,10 @@ def layer_table(network, update_norms=None) -> Table:
     table.add_column("#", justify="right")
     table.add_column("Type")
     table.add_column("Neurons", justify="right")
-    table.add_column("Activation sample")
-    table.add_column("Act μ/max", justify="right")
-    table.add_column("Weight μ/σ", justify="right")
-    table.add_column("Δ update", justify="right")
+    table.add_column("Activation", no_wrap=True)
+    table.add_column("Act μ/max", justify="right", no_wrap=True)
+    table.add_column("W μ/σ", justify="right", no_wrap=True)
+    table.add_column("Δ", justify="right", no_wrap=True)
 
     update_norms = update_norms or {}
     for index, layer in enumerate(network.layer_array):
@@ -81,14 +83,14 @@ def layer_table(network, update_norms=None) -> Table:
             weight_summary = "-"
             update_summary = "-"
         else:
-            weight_summary = f"{np.mean(layer.weights):+.4f}/{np.std(layer.weights):.4f}"
-            update_summary = f"{update_norms.get(index, 0.0):.2e}"
+            weight_summary = f"{np.mean(layer.weights):+.2f}/{np.std(layer.weights):.2f}"
+            update_summary = f"{update_norms.get(index, 0.0):.1e}"
 
         table.add_row(
             str(index),
             layer.layerType.value,
             str(layer.neuronDim),
-            sparkline(activations[0] if activations.ndim > 1 else activations),
+            sparkline(activations[0] if activations.ndim > 1 else activations, width=12),
             f"{activation_mean:.3f}/{activation_max:.3f}",
             weight_summary,
             update_summary,
@@ -125,19 +127,17 @@ def metrics_panel(metrics: VisualMetrics) -> Panel:
     return Panel(text, title="Training", border_style="blue")
 
 
-def dashboard(network, sample_image, sample_label: int, probabilities, metrics: VisualMetrics, update_norms=None) -> Layout:
-    layout = Layout()
-    layout.split_column(
-        Layout(name="header", size=3),
-        Layout(name="main"),
-        Layout(name="footer", size=7),
+def dashboard(network, sample_image, sample_label: int, probabilities, metrics: VisualMetrics, update_norms=None) -> Group:
+    return Group(
+        Panel(Align.center("[bold]Neural Network Terminal Visualizer[/bold]"), border_style="magenta"),
+        Panel(layer_table(network, update_norms), title="Network", border_style="green"),
+        Columns(
+            [
+                Panel(render_digit(sample_image), title="MNIST Sample", border_style="cyan"),
+                Panel(probability_table(probabilities, sample_label), title="Inference", border_style="yellow"),
+            ],
+            equal=False,
+            expand=True,
+        ),
+        metrics_panel(metrics),
     )
-    layout["main"].split_row(Layout(name="left", ratio=2), Layout(name="right", ratio=1))
-    layout["right"].split_column(Layout(name="digit"), Layout(name="probabilities"))
-
-    layout["header"].update(Panel(Align.center("[bold]Neural Network Terminal Visualizer[/bold]"), border_style="magenta"))
-    layout["left"].update(Panel(layer_table(network, update_norms), title="Network", border_style="green"))
-    layout["digit"].update(Panel(render_digit(sample_image), title="MNIST Sample", border_style="cyan"))
-    layout["probabilities"].update(Panel(probability_table(probabilities, sample_label), title="Inference", border_style="yellow"))
-    layout["footer"].update(metrics_panel(metrics))
-    return layout

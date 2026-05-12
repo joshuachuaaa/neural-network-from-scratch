@@ -1,5 +1,5 @@
 import numpy as np
-from rich.layout import Layout
+from rich.console import Group
 from rich.table import Table
 from rich.text import Text
 
@@ -27,7 +27,11 @@ def test_sparkline_limits_width():
     assert len(sparkline(range(100), width=10)) == 10
 
 
-def test_dashboard_is_rich_layout():
+def test_sparkline_shows_constant_positive_values():
+    assert sparkline([2.3]) == "█"
+
+
+def test_dashboard_is_rich_group():
     network = NeuralNetwork(hidden_layers=1, hidden_layer_dim=4)
     probabilities = network.predict(np.zeros((1, 784)))[0]
     metrics = VisualMetrics(
@@ -43,7 +47,7 @@ def test_dashboard_is_rich_layout():
 
     rendered = dashboard(network, np.zeros((28, 28)), 0, probabilities, metrics)
 
-    assert isinstance(rendered, Layout)
+    assert isinstance(rendered, Group)
 
 
 def test_layer_update_norms_reports_non_input_layers():
