@@ -7,6 +7,7 @@ This repository implements a small fully connected neural network for MNIST digi
 ```text
 .
 ├── data/mnist/                         # MNIST gzip files
+├── docs/assets/                        # README screenshots and project media
 ├── src/neural_network_from_scratch/
 │   ├── activations.py                  # ReLU and Softmax
 │   ├── data.py                         # MNIST IDX gzip loading and validation
@@ -86,6 +87,8 @@ nnfs-train
 ```
 
 ## Terminal Visualization
+
+![Interactive terminal UI](docs/assets/terminal-ui.png)
 
 Launch the interactive terminal lab:
 

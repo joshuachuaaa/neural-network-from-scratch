@@ -10,3 +10,4 @@ venv/
 .env
 .project-context/
 artifacts/
+*.egg-info/
